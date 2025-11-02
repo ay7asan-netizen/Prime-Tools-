@@ -1,87 +1,109 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prime Tools</title>
-<style>
-body { font-family: sans-serif; background:#111; color:#fff; padding:20px; }
-input,button { width:100%; padding:12px; margin-top:10px; border-radius:8px; }
-input { border:1px solid #444; background:#222; color:#fff; }
-button { background:#0a84ff; border:none; font-size:16px; font-weight:bold; }
-h2 { text-align:center; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prime Tools — تسجيل الدخول</title>
+  <style>
+    body{margin:0;background:#0e0e10;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Tajawal,sans-serif}
+    .wrap{max-width:420px;margin:40px auto;padding:0 16px}
+    .card{background:#141418;border:1px solid #27272a;border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    h1{margin:0 0 14px}
+    .field{position:relative;margin-top:10px}
+    input{width:100%;padding:12px 44px 12px 12px;border-radius:10px;border:1px solid #303036;background:#0f0f12;color:#fff}
+    .eye{position:absolute;left:10px;top:50%;transform:translateY(-50%);cursor:pointer;user-select:none;opacity:.8}
+    .row{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+    .btn{width:100%;padding:12px;border:none;border-radius:10px;background:#27b0ff;color:#061019;font-weight:800;cursor:pointer;margin-top:12px}
+    .muted{color:#a6a6b0;font-size:14px;margin-top:10px}
+    a{color:#9cd2ff;text-decoration:none}
+    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .link{color:#9cd2ff;text-decoration:none;font-size:14px}
+  </style>
 </head>
-
 <body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <h1>Prime Tools</h1>
+        <a class="link" href="admin.html">لوحة الأدمن</a>
+      </div>
 
-<h2>تسجيل الدخول</h2>
-<input id="email" placeholder="البريد الإلكتروني">
-<input id="password" placeholder="كلمة المرور" type="password">
-<button onclick="login()">دخول</button>
+      <label>البريد الإلكتروني</label>
+      <div class="field">
+        <input id="email" type="email" placeholder="example@mail.com" autocomplete="username" />
+      </div>
 
-<h2>إنشاء حساب</h2>
-<input id="fname" placeholder="الاسم الأول">
-<input id="lname" placeholder="اسم العائلة">
-<input id="address" placeholder="العنوان">
-<input id="emailReg" placeholder="البريد الإلكتروني">
-<input id="passReg" placeholder="كلمة المرور" type="password">
-<button onclick="register()">تسجيل</button>
+      <label style="margin-top:10px">كلمة المرور</label>
+      <div class="field">
+        <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+        <span id="toggle" class="eye">👁️</span>
+      </div>
 
-<p id="msg"></p>
+      <div class="row">
+        <label style="display:flex;gap:8px;align-items:center">
+          <input id="remember" type="checkbox" /> تذكّرني
+        </label>
+        <span class="muted">لا يوجد إنشاء حساب هنا — فقط من الأدمن</span>
+      </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore-compat.js"></script>
+      <button class="btn" id="loginBtn">دخول</button>
+      <div id="msg" class="muted"></div>
+    </div>
+  </div>
 
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCEbKMZHqJQ-UU6Qco7FlAue0E4mCWd4UY",
-  authDomain: "prime-tools99.firebaseapp.com",
-  projectId: "prime-tools99",
-  storageBucket: "prime-tools99.firebasestorage.app",
-  messagingSenderId: "112360376529",
-  appId: "1:112360376529:web:f5fac1d99a87f7f5a85df0"
-};
+  <!-- Firebase (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore-compat.js"></script>
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+  <script>
+    // إعدادات Firebase الخاصة بمشروعك
+    const firebaseConfig = {
+      apiKey: "AIzaSyCEbKMZHqJQ-UU6Qco7FlAue0E4mCWd4UY",
+      authDomain: "prime-tools99.firebaseapp.com",
+      projectId: "prime-tools99",
+      storageBucket: "prime-tools99.firebasestorage.app",
+      messagingSenderId: "112360376529",
+      appId: "1:112360376529:web:f5fac1d99a87f7f5a85df0"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
 
-async function login(){
- let email = document.getElementById("email").value;
- let pass = document.getElementById("password").value;
- auth.signInWithEmailAndPassword(email,pass).then(async res=>{
-   let uid = res.user.uid;
-   let doc = await db.collection("users").doc(uid).get();
-   if(!doc.exists) return alert("لا يوجد ملف مستخدم");
-   if(doc.data().status !== "approved") return alert("حسابك قيد المراجعة");
-   alert("تم الدخول ✅");
-   window.location.href="user.html";
- }).catch(e=>alert(e.message));
-}
+    // إظهار/إخفاء كلمة المرور
+    document.getElementById('toggle').onclick = ()=>{
+      const p = document.getElementById('password');
+      p.type = (p.type === 'password') ? 'text' : 'password';
+    };
 
-async function register(){
- let fname = document.getElementById("fname").value;
- let lname = document.getElementById("lname").value;
- let addr = document.getElementById("address").value;
- let email = document.getElementById("emailReg").value;
- let pass = document.getElementById("passReg").value;
+    // تذكّرني = LOCAL | بدون تذكّر = SESSION
+    async function setPersistence(remember){
+      const kind = remember ? firebase.auth.Auth.Persistence.LOCAL
+                            : firebase.auth.Auth.Persistence.SESSION;
+      await auth.setPersistence(kind);
+    }
 
- auth.createUserWithEmailAndPassword(email,pass).then(async res=>{
-   let uid = res.user.uid;
-   await db.collection("users").doc(uid).set({
-     firstName: fname,
-     lastName: lname,
-     address: addr,
-     email: email,
-     status: "approved", /* خليها approved مؤقتًا للتشغيل */
-     isAdmin: false
-   });
-   alert("تم إنشاء الحساب يمكنك الدخول ✅");
- }).catch(e=>alert(e.message));
-}
-</script>
+    // تسجيل الدخول
+    document.getElementById('loginBtn').onclick = async ()=>{
+      const email = document.getElementById('email').value.trim();
+      const pass  = document.getElementById('password').value;
+      const remember = document.getElementById('remember').checked;
+      const msg = document.getElementById('msg');
+      msg.textContent = '';
+      try{
+        await setPersistence(remember);
+        const cred = await auth.signInWithEmailAndPassword(email, pass);
+        // تأكد أن الحساب مفعّل
+        const udoc = await db.collection('users').doc(cred.user.uid).get();
+        if(!udoc.exists) { msg.textContent = 'لا يوجد ملف مستخدم.'; await auth.signOut(); return; }
+        const u = udoc.data();
+        if(u.status !== 'approved'){ msg.textContent = 'حسابك غير مفعّل.'; await auth.signOut(); return; }
+        // نجاح
+        window.location.href = 'user.html';
+      }catch(e){
+        msg.textContent = 'خطأ: ' + e.message;
+      }
+    };
+  </script>
 </body>
 </html>
