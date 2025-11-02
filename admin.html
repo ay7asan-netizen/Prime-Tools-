@@ -1,31 +1,80 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لوحة التحكم</title>
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prime Tools Admin</title>
+<style>
+body { font-family: sans-serif; background:#000; color:#fff; padding:20px; }
+button,input { width:100%; padding:12px; margin-top:10px; border-radius:8px; }
+input { border:1px solid #444; background:#111; color:#fff; }
+button { background:#00c853; border:none; font-size:16px; font-weight:bold; }
+</style>
 </head>
+
 <body>
-  <h2>لوحة التحكم - الأدمن</h2>
 
-  <button onclick="logout()">🚪 خروج</button>
+<h2>لوحة الأدمن</h2>
 
-  <h3>المستخدمين</h3>
-  <div id="users"></div>
+<h3>تسجيل دخول الأدمن</h3>
+<input id="email" placeholder="الإيميل">
+<input id="password" type="password" placeholder="كلمة المرور">
+<button onclick="loginAdmin()">دخول كأدمن</button>
 
-  <h3>الأدوات</h3>
-  <input id="toolId" placeholder="Tool ID">
-  <input id="toolName" placeholder="Tool Name">
-  <button onclick="addTool()">➕ إضافة أداة</button>
+<div id="adminPanel" style="display:none;">
+<h3>إضافة أداة</h3>
+<input id="toolName" placeholder="اسم الأداة">
+<button onclick="addTool()">إضافة</button>
 
-  <ul id="tools"></ul>
+<div id="tools"></div>
+</div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore-compat.js"></script>
 
-  <script src="firebase-config.js"></script>
-  <script src="admin.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCEbKMZHqJQ-UU6Qco7FlAue0E4mCWd4UY",
+  authDomain: "prime-tools99.firebaseapp.com",
+  projectId: "prime-tools99",
+  storageBucket: "prime-tools99.firebasestorage.app",
+  messagingSenderId: "112360376529",
+  appId: "1:112360376529:web:f5fac1d99a87f7f5a85df0"
+});
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+async function loginAdmin(){
+ let email = document.getElementById("email").value;
+ let pass = document.getElementById("password").value;
+
+ auth.signInWithEmailAndPassword(email,pass).then(async u=>{
+   let uid = u.user.uid;
+   let doc = await db.collection("users").doc(uid).get();
+   if(!doc.exists) return alert("ليس مصرح");
+   if(doc.data().isAdmin !== true) return alert("ليس أدمن ❌");
+   document.getElementById("adminPanel").style.display = "block";
+   loadTools();
+ }).catch(e=>alert(e.message));
+}
+
+async function addTool(){
+ let name = document.getElementById("toolName").value;
+ if(!name) return alert("اكتب اسم الأداة");
+ await db.collection("tools").add({name:name});
+ alert("تمت الإضافة ✅");
+ loadTools();
+}
+
+function loadTools(){
+ db.collection("tools").get().then(s=>{
+   let html="";
+   s.forEach(d=>{ html+=`<p>🛠 ${d.data().name}</p>`; });
+   document.getElementById("tools").innerHTML = html;
+ });
+}
+</script>
 </body>
 </html>
