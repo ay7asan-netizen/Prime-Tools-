@@ -1,133 +1,87 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Prime Tool — Ahmed</title>
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0f0f0f" />
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prime Tools</title>
+<style>
+body { font-family: sans-serif; background:#111; color:#fff; padding:20px; }
+input,button { width:100%; padding:12px; margin-top:10px; border-radius:8px; }
+input { border:1px solid #444; background:#222; color:#fff; }
+button { background:#0a84ff; border:none; font-size:16px; font-weight:bold; }
+h2 { text-align:center; }
+</style>
 </head>
-<body data-theme="dark">
-  <header class="topbar">
-    <strong id="appTitle">Prime Tool</strong>
-    <div class="right">
-      <span class="lang" data-lang="ar">AR</span>|
-      <span class="lang" data-lang="en">EN</span>|
-      <span class="lang" data-lang="de">DE</span>
-      <button class="icon-btn" id="themeToggle" title="Theme">🌓</button>
-    </div>
-  </header>
 
-  <main>
-    <!-- شاشة الدخول -->
-    <section class="card" id="authScreen">
-      <h2 id="t-login">تسجيل الدخول</h2>
-      <div class="grid">
-        <input id="email" type="email" placeholder="البريد" autocomplete="username" />
-        <input id="password" type="password" placeholder="كلمة المرور" autocomplete="current-password" />
-        <button id="loginBtn">دخول</button>
-      </div>
-      <hr />
-      <h3 id="t-register">تسجيل حساب جديد</h3>
-      <div class="grid">
-        <input id="firstName" placeholder="الاسم الأول" />
-        <input id="lastName" placeholder="اسم العائلة" />
-        <input id="address" placeholder="العنوان" />
-        <input id="regEmail" type="email" placeholder="البريد" autocomplete="email" />
-        <input id="regPass" type="password" placeholder="كلمة المرور" autocomplete="new-password" />
-        <button id="registerBtn">تسجيل</button>
-      </div>
-      <p class="muted" id="authMsg"></p>
-    </section>
+<body>
 
-    <!-- شاشة المستخدم -->
-    <section class="card hidden" id="userScreen">
-      <div class="row between">
-        <h2 id="t-welcome">مرحباً</h2>
-        <div>
-          <button class="ghost" id="openScanner">📷 <span id="t-scan">مسح QR</span></button>
-          <button class="ghost" id="logoutBtn">🚪 <span id="t-logout">خروج</span></button>
-        </div>
-      </div>
-      <div id="userStatus" class="muted"></div>
-      <div id="borrowList" class="list"></div>
-      <div style="margin-top:10px">
-        <input id="manualCode" placeholder="أدخل كود الأداة (اختياري)" />
-        <button id="manualBtn">تنفيذ يدوي</button>
-      </div>
-    </section>
+<h2>تسجيل الدخول</h2>
+<input id="email" placeholder="البريد الإلكتروني">
+<input id="password" placeholder="كلمة المرور" type="password">
+<button onclick="login()">دخول</button>
 
-    <!-- شاشة الأدمن -->
-    <section class="card hidden" id="adminScreen">
-      <div class="row between">
-        <h2 id="t-admin">لوحة الأدمن</h2>
-        <button class="ghost" id="closeAdmin">✖</button>
-      </div>
-      <div class="row">
-        <input id="pinInput" type="password" placeholder="PIN" />
-        <button id="unlockBtn"><span id="t-unlock">فتح</span></button>
-        <span id="pinStatus" class="muted"></span>
-      </div>
-      <div id="adminBody" class="hidden">
-        <div class="tabs">
-          <button data-tab="pending" class="tab active" id="t-pending">طلبات التسجيل</button>
-          <button data-tab="tools" class="tab" id="t-tools">الأدوات</button>
-          <button data-tab="history" class="tab" id="t-history">السجل</button>
-          <button data-tab="settings" class="tab" id="t-settings">الإعدادات</button>
-        </div>
+<h2>إنشاء حساب</h2>
+<input id="fname" placeholder="الاسم الأول">
+<input id="lname" placeholder="اسم العائلة">
+<input id="address" placeholder="العنوان">
+<input id="emailReg" placeholder="البريد الإلكتروني">
+<input id="passReg" placeholder="كلمة المرور" type="password">
+<button onclick="register()">تسجيل</button>
 
-        <div class="tabcontent" id="tab-pending">
-          <div id="pendingList" class="list"></div>
-        </div>
+<p id="msg"></p>
 
-        <div class="tabcontent hidden" id="tab-tools"><div class="row">
-  <input id="toolName" placeholder="اسم الأداة" />
-  <input id="toolImage" type="file" accept="image/*" />
-  <button id="addTool">إنشاء</button>
-</div><div class="row">
-  <input id="toolName" placeholder="اسم الأداة" />
-  <input id="toolImage" type="file" accept="image/*" />
-  <button id="addTool">إنشاء</button>
-</div>
-        </div>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore-compat.js"></script>
 
-        <div class="tabcontent hidden" id="tab-history">
-          <div id="historyList" class="list"></div>
-        </div>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCEbKMZHqJQ-UU6Qco7FlAue0E4mCWd4UY",
+  authDomain: "prime-tools99.firebaseapp.com",
+  projectId: "prime-tools99",
+  storageBucket: "prime-tools99.firebasestorage.app",
+  messagingSenderId: "112360376529",
+  appId: "1:112360376529:web:f5fac1d99a87f7f5a85df0"
+};
 
-        <div class="tabcontent hidden" id="tab-settings">
-          <div class="row">
-            <input id="newPin" placeholder="PIN جديد" />
-            <button id="savePin">حفظ PIN</button>
-          </div>
-          <p class="muted">Admin: Ahmed — © Prime Tool System</p>
-        </div>
-      </div>
-    </section>
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-    <!-- نافذة الماسح -->
-    <dialog id="scanModal">
-      <div class="row between"><h3 id="t-scanTitle">مسح QR</h3><button id="closeScan">✖</button></div>
-      <div id="qrReader" style="width:100%"></div>
-      <p class="muted">صيغة الرمز: <code>TOOL:&lt;toolId&gt;</code></p>
-    </dialog>
-  </main>
+async function login(){
+ let email = document.getElementById("email").value;
+ let pass = document.getElementById("password").value;
+ auth.signInWithEmailAndPassword(email,pass).then(async res=>{
+   let uid = res.user.uid;
+   let doc = await db.collection("users").doc(uid).get();
+   if(!doc.exists) return alert("لا يوجد ملف مستخدم");
+   if(doc.data().status !== "approved") return alert("حسابك قيد المراجعة");
+   alert("تم الدخول ✅");
+   window.location.href="user.html";
+ }).catch(e=>alert(e.message));
+}
 
-  <!-- Firebase compat -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+async function register(){
+ let fname = document.getElementById("fname").value;
+ let lname = document.getElementById("lname").value;
+ let addr = document.getElementById("address").value;
+ let email = document.getElementById("emailReg").value;
+ let pass = document.getElementById("passReg").value;
 
-  <!-- QR libs -->
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-  <!-- App -->
-  <script src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('service-worker.js'); }
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+ auth.createUserWithEmailAndPassword(email,pass).then(async res=>{
+   let uid = res.user.uid;
+   await db.collection("users").doc(uid).set({
+     firstName: fname,
+     lastName: lname,
+     address: addr,
+     email: email,
+     status: "approved", /* خليها approved مؤقتًا للتشغيل */
+     isAdmin: false
+   });
+   alert("تم إنشاء الحساب يمكنك الدخول ✅");
+ }).catch(e=>alert(e.message));
+}
+</script>
 </body>
 </html>
