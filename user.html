@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة المستخدم</title>
+
+<style>
+body { font-family: sans-serif; background:#000; color:#fff; padding:20px; }
+button { width:100%; padding:12px; margin-top:10px; border-radius:8px; background:#e53935; font-size:16px; color:#fff; border:none; }
+.box {
+ background:#111; padding:15px; margin-top:10px; border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>مرحبًا بك 👋</h2>
+<p>تم تسجيل دخولك بنجاح ✅</p>
+
+<div class="box">
+<h3>الأدوات المتاحة 🔧</h3>
+<div id="tools"></div>
+</div>
+
+<button onclick="logout()">تسجيل الخروج</button>
+
+<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore-compat.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCEbKMZHqJQ-UU6Qco7FlAue0E4mCWd4UY",
+  authDomain: "prime-tools99.firebaseapp.com",
+  projectId: "prime-tools99",
+  storageBucket: "prime-tools99.firebasestorage.app",
+  messagingSenderId: "112360376529",
+  appId: "1:112360376529:web:f5fac1d99a87f7f5a85df0"
+});
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+auth.onAuthStateChanged(async user=>{
+ if(!user) return window.location.href="index.html";
+ loadTools();
+});
+
+function logout(){
+ auth.signOut().then(()=>window.location.href="index.html");
+}
+
+function loadTools(){
+ db.collection("tools").get().then(s=>{
+   let html="";
+   s.forEach(d=>{
+    html += `<p>✅ ${d.data().name}</p>`;
+   });
+   document.getElementById("tools").innerHTML = html || "لا توجد أدوات حاليا ❗";
+ });
+}
+</script>
+
+</body>
+</html>
