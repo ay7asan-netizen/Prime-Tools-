@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <h2>لوحة التحكم - الأدمن</h2>
+
+  <button onclick="logout()">🚪 خروج</button>
+
+  <h3>المستخدمين</h3>
+  <div id="users"></div>
+
+  <h3>الأدوات</h3>
+  <input id="toolId" placeholder="Tool ID">
+  <input id="toolName" placeholder="Tool Name">
+  <button onclick="addTool()">➕ إضافة أداة</button>
+
+  <ul id="tools"></ul>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+  <script src="firebase-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

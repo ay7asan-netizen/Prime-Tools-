@@ -1,0 +1,35 @@
+:root{--bg:#0f0f0f;--card:#1a1a1a;--text:#f5f5f5;--muted:#a3a3a3;--border:#2a2a2a;--accent:#38bdf8}
+[data-theme="light"]{--bg:#f7f7f7;--card:#ffffff;--text:#0a0a0a;--muted:#666;--border:#ddd;--accent:#0ea5e9}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Tajawal,sans-serif}
+.topbar{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.topbar .right{display:flex;align-items:center;gap:8px}
+.icon-btn{background:none;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 8px;cursor:pointer}
+main{max-width:1000px;margin:16px auto;padding:0 12px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid input,.grid button{grid-column:span 1}
+.grid button{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:10px;cursor:pointer}
+.row{display:flex;gap:10px;align-items:center}
+.row.between{justify-content:space-between}
+input{width:100%;background:transparent;border:1px solid var(--border);color:var(--text);padding:10px;border-radius:10px}
+button{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:10px 14px;cursor:pointer}
+button.ghost{background:none;border:1px solid var(--border);color:var(--text)}
+.list{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.item{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.item:last-child{border-bottom:0}
+.badge{padding:2px 8px;border-radius:999px;font-size:12px;background:#222;color:#ddd;border:1px solid var(--border)}
+.hidden{display:none}
+.muted{color:var(--muted)}
+.tabs{display:flex;gap:8px;margin:8px 0}
+.tab{background:none;border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;cursor:pointer}
+.tab.active{background:var(--accent);border-color:transparent}
+dialog{border:1px solid var(--border);border-radius:12px;background:var(--card);color:var(--text);padding:12px;max-width:520px;width:96%}
+.lang{cursor:pointer;color:var(--muted)}
+button { transition:.2s ease; }
+button:hover { transform: translateY(-1px); filter: brightness(1.05); }
+.card { backdrop-filter: blur(2px); }
+input:focus, button:focus { outline:2px solid var(--accent); outline-offset:2px; }
+.badge { background: rgba(56,189,248,.12); color: var(--accent); border-color: transparent; }
+.item { align-items:center; }
+.item > div:first-child { display:flex; align-items:center; gap:12px; }

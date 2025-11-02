@@ -1,0 +1,9 @@
+{
+  "name": "Prime Tool — Ahmed",
+  "short_name": "Prime Tool",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0f0f0f",
+  "background_color": "#0f0f0f",
+  "icons": []
+}
