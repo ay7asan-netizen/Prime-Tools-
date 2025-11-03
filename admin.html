@@ -1,236 +1,145 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Prime Tools — لوحة الأدمن</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prime Tools — Admin</title>
+
+  <!-- نفس الـ CSS بالضبط -->
   <style>
-    body{margin:0;background:#0e0e10;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Tajawal,sans-serif}
-    .wrap{max-width:960px;margin:24px auto;padding:0 16px}
-    .card{background:#141418;border:1px solid #27272a;border-radius:14px;padding:16px;margin-bottom:14px}
-    h1,h2{margin:0 0 10px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    input,button{width:100%;padding:12px;border-radius:10px;border:1px solid #303036;background:#0f0f12;color:#fff}
-    button{background:#27b0ff;border:none;font-weight:800;cursor:pointer}
-    button:hover{filter:brightness(1.05)}
-    .muted{color:#a6a6b0;font-size:14px}
-    .list{border:1px solid #2a2a2f;border-radius:12px;overflow:hidden}
-    .item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #2a2a2f}
-    .item:last-child{border-bottom:0}
-    .danger{background:#ff4d4f !important}
+    :root{
+      --bg:#0e0e10;--card:#141418;--muted:#a6a6b0;--border:#27272a;
+      --input-bg:#0f0f12;--accent:#27b0ff;--accent-ink:#071622;
+      --shadow:0 10px 36px rgba(0,0,0,.35);--radius:16px
+    }
+    *{box-sizing:border-box}html,body{height:100%}
+    body{margin:0;background:var(--bg);color:#fff;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Tajawal,"Noto Naskh Arabic",sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+    .wrap{max-width:980px;margin:36px auto;padding:0 18px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+    h1,h2{margin:0 0 14px 0;line-height:1.15}h1{font-size:clamp(26px,4vw,44px);font-weight:900;letter-spacing:.3px}h2{font-size:clamp(18px,2.8vw,24px);font-weight:800}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .langbar{display:flex;align-items:center;gap:8px}
+    .lang{cursor:pointer;user-select:none;padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:#111115;opacity:.85;font-weight:700;letter-spacing:.2px}
+    .lang.active{opacity:1;background:#1b1b21}
+    .link{color:#9cd2ff;text-decoration:none;font-weight:700}.link:hover{text-decoration:underline}
+    label{display:block;margin:10px 0 6px;font-weight:700}
+    .field{position:relative}
+    input,button{width:100%;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:#fff;padding:13px 14px;font-size:16px}
+    input::placeholder{color:#8b8b95}input:focus,button:focus{outline:2px solid var(--accent);outline-offset:2px}
+    .eye{position:absolute;inset-block:0;display:grid;place-items:center;width:42px;cursor:pointer;opacity:.8}
+    html[dir="rtl"] .eye{left:6px}html[dir="ltr"] .eye{right:6px}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px}
+    .muted{color:var(--muted);font-size:14px}
+    .btn{background:var(--accent);color:var(--accent-ink);border:none;font-weight:900;letter-spacing:.2px;padding:13px 14px;border-radius:12px;margin-top:14px;cursor:pointer;transition:transform .05s ease,filter .2s ease}
+    .btn:hover{filter:brightness(1.06)}.btn:active{transform:translateY(1px)}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:820px){.grid{grid-template-columns:1fr}}
+    .list{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:8px}
+    .item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border)}
+    .item:last-child{border-bottom:none}
+    .danger{background:#ff4d4f;color:#111}
+    .hidden{display:none}
+    .pill{display:inline-block;padding:4px 10px;border:1px solid var(--border);border-radius:999px;margin-inline-start:8px}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>لوحة الأدمن — Prime Tools</h1>
-      <p class="muted">إنشاء حسابات الموظفين + إضافة أدوات. (لا يوجد تسجيل ذاتي).</p>
-    </div>
-
-    <!-- دخول الأدمن -->
-    <div class="card" id="authCard">
-      <h2>تسجيل دخول الأدمن</h2>
-      <div class="grid">
-        <input id="adminEmail" type="email" placeholder="البريد" />
-        <div style="position:relative">
-          <input id="adminPass" type="password" placeholder="كلمة المرور" />
-          <span id="toggleAdmin" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);cursor:pointer">👁️</span>
+      <div class="top">
+        <h1>Prime<br/>Tools <span class="pill">Admin</span></h1>
+        <div class="langbar">
+          <button class="lang active" data-lang="ar">AR</button>
+          <button class="lang" data-lang="en">EN</button>
+          <button class="lang" data-lang="de">DE</button>
         </div>
+        <a class="link" href="index.html">الواجهة</a>
       </div>
-      <button id="adminLoginBtn" style="margin-top:10px">دخول</button>
-      <div class="muted" id="adminMsg"></div>
-    </div>
 
-    <!-- لوحة الإدارة -->
-    <div class="card" id="panel" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <h2>إنشاء مستخدم جديد</h2>
-        <button id="logoutBtn" class="danger" style="max-width:180px">تسجيل الخروج</button>
-      </div>
-      <div class="grid">
-        <input id="uFirst" placeholder="الاسم الأول" />
-        <input id="uLast" placeholder="اسم العائلة" />
-        <input id="uAddress" placeholder="العنوان" />
-        <input id="uEmail" type="email" placeholder="البريد" />
-        <input id="uPass" type="text" placeholder="كلمة مرور مؤقتة (اتركه فارغ لتوليد تلقائي)" />
-        <button id="createUserBtn">إنشاء الحساب</button>
-      </div>
-      <div id="createMsg" class="muted" style="margin-top:10px"></div>
-    </div>
+      <!-- شاشة دخول الأدمن -->
+      <section id="authScreen">
+        <h2>تسجيل دخول الأدمن</h2>
+        <div class="grid">
+          <div>
+            <label>البريد</label>
+            <input id="email" type="email" placeholder="admin@mail.com" autocomplete="username" />
+          </div>
+          <div class="field">
+            <label>كلمة المرور</label>
+            <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+            <span class="eye" id="togglePass">👁️</span>
+          </div>
+        </div>
+        <div class="row">
+          <label style="display:flex;align-items:center;gap:8px">
+            <input id="remember" type="checkbox" />
+            <span>تذكرني</span>
+          </label>
+          <span id="authMsg" class="muted"></span>
+        </div>
+        <button id="loginBtn" class="btn">تسجيل الدخول</button>
+      </section>
 
-    <div class="card" id="toolsCard" style="display:none">
-      <h2>إضافة أداة</h2>
-      <div class="grid" style="grid-template-columns:1fr auto">
-        <input id="toolName" placeholder="اسم الأداة" />
-        <button id="addToolBtn">إضافة</button>
-      </div>
-      <h2 style="margin-top:16px">قائمة الأدوات</h2>
-      <div id="toolsList" class="list"></div>
+      <!-- شاشة الإدارة بعد الدخول -->
+      <section id="adminScreen" class="hidden">
+        <h2>لوحة الإدارة</h2>
+
+        <div class="grid">
+          <!-- إنشاء مستخدم جديد -->
+          <div class="card" style="padding:16px">
+            <h3 style="margin:0 0 10px 0">إنشاء مستخدم</h3>
+            <div class="grid">
+              <input id="firstName" placeholder="الاسم الأول" />
+              <input id="lastName"  placeholder="اسم العائلة" />
+              <input id="address"   placeholder="العنوان" />
+              <input id="regEmail"  placeholder="البريد" type="email" />
+              <input id="regPass"   placeholder="كلمة المرور" type="password" />
+            </div>
+            <button id="registerBtn" class="btn">حفظ المستخدم</button>
+          </div>
+
+          <!-- إدارة الأدوات -->
+          <div class="card" style="padding:16px">
+            <h3 style="margin:0 0 10px 0">الأدوات</h3>
+            <div class="grid">
+              <input id="toolId" placeholder="معرّف الأداة (toolId)" />
+              <input id="toolName" placeholder="اسم الأداة" />
+            </div>
+            <button id="saveToolBtn" class="btn">حفظ الأداة</button>
+            <div id="tools" class="list" style="margin-top:12px"></div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:18px">المستخدمون</h3>
+        <div id="users" class="list"></div>
+
+        <button id="logoutBtn" class="btn danger" style="margin-top:18px">تسجيل الخروج</button>
+      </section>
     </div>
   </div>
 
-  <!-- Firebase (Compat) -->
-  <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore-compat.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Firebase v8 compat -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
+  <!-- سكربت الإدارة لديك -->
+  <script src="admin.js"></script>
+
+  <!-- إظهار/إخفاء كلمة المرور + تفعيل زر اللغات بصريًا -->
   <script>
-    // التهيئة الأساسية
-    const cfg = {
-      apiKey: "AIzaSyCEbKMZHqJQ-UU6Qco7FlAue0E4mCWd4UY",
-      authDomain: "prime-tools99.firebaseapp.com",
-      projectId: "prime-tools99",
-      storageBucket: "prime-tools99.firebasestorage.app",
-      messagingSenderId: "112360376529",
-      appId: "1:112360376529:web:f5fac1d99a87f7f5a85df0"
-    };
-    const appMain = firebase.initializeApp(cfg);
-    const auth = appMain.auth();
-    const db   = appMain.firestore();
-
-    // تطبيق ثانوي لإنشاء مستخدمين بدون ما يطلع الأدمن من حسابه
-    const appSecondary = firebase.initializeApp(cfg, "secondary");
-    const auth2 = appSecondary.auth();
-
-    // عناصر
-    const authCard   = document.getElementById('authCard');
-    const panel      = document.getElementById('panel');
-    const toolsCard  = document.getElementById('toolsCard');
-    const adminMsg   = document.getElementById('adminMsg');
-    const createMsg  = document.getElementById('createMsg');
-
-    document.getElementById('toggleAdmin').onclick = ()=>{
-      const p = document.getElementById('adminPass');
-      p.type = (p.type === 'password') ? 'text' : 'password';
-    };
-
-    // شرط إدمن: users/<uid> فيه isAdmin=true أو role='admin'
-    async function assertAdmin(user){
-      const doc = await db.collection('users').doc(user.uid).get();
-      const u = doc.data() || {};
-      if (u.isAdmin === true || u.role === 'admin') return true;
-      return false;
-    }
-
-    // دخول الأدمن
-    document.getElementById('adminLoginBtn').onclick = async ()=>{
-      adminMsg.textContent = '';
-      const email = document.getElementById('adminEmail').value.trim();
-      const pass  = document.getElementById('adminPass').value;
-      try{
-        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-        const cred = await auth.signInWithEmailAndPassword(email, pass);
-        if (await assertAdmin(cred.user)){
-          authCard.style.display = 'none';
-          panel.style.display = 'block';
-          toolsCard.style.display = 'block';
-          loadTools();
-        } else {
-          adminMsg.textContent = 'هذا الحساب ليس أدمن.';
-          await auth.signOut();
-        }
-      }catch(e){ adminMsg.textContent = 'خطأ: ' + e.message; }
-    };
-
-    // تسجيل خروج
-    document.getElementById('logoutBtn').onclick = async ()=>{
-      await auth.signOut();
-      panel.style.display = 'none';
-      toolsCard.style.display = 'none';
-      authCard.style.display = 'block';
-    };
-
-    // توليد كلمة مرور بسيطة
-    function genPass(len=10){
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
-      let out=''; for(let i=0;i<len;i++) out += chars[Math.floor(Math.random()*chars.length)];
-      return out;
-    }
-
-    // إنشاء مستخدم جديد (من الأدمن فقط) عبر التطبيق الثانوي
-    document.getElementById('createUserBtn').onclick = async ()=>{
-      createMsg.textContent = '';
-      const first = document.getElementById('uFirst').value.trim();
-      const last  = document.getElementById('uLast').value.trim();
-      const addr  = document.getElementById('uAddress').value.trim();
-      const email = document.getElementById('uEmail').value.trim();
-      let pass    = document.getElementById('uPass').value.trim() || genPass();
-
-      if(!first || !last || !addr || !email){ createMsg.textContent='أكمل البيانات.'; return; }
-
-      try{
-        // إنشاء حساب بدون ما يطلّع الأدمن من جلسته
-        const res = await auth2.createUserWithEmailAndPassword(email, pass);
-        const uid = res.user.uid;
-
-        // إنشاء وثيقة المستخدم في Firestore
-        await db.collection('users').doc(uid).set({
-          firstName: first,
-          lastName:  last,
-          address:   addr,
-          email:     email,
-          status:    'approved',
-          isAdmin:   false,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    (function(){
+      const pass = document.getElementById('password');
+      document.getElementById('togglePass').onclick = () => {
+        pass.type = pass.type === 'password' ? 'text' : 'password';
+      };
+      document.querySelectorAll('.lang').forEach(b=>{
+        b.addEventListener('click', ()=>{
+          document.querySelectorAll('.lang').forEach(x=>x.classList.remove('active'));
+          b.classList.add('active');
         });
-
-        // تسجيل خروج التطبيق الثانوي فورًا (حماية)
-        await auth2.signOut();
-
-        createMsg.textContent = 'تم إنشاء الحساب ✅ كلمة المرور المؤقتة: ' + pass;
-        // تفريغ الحقول
-        ['uFirst','uLast','uAddress','uEmail','uPass'].forEach(id=>document.getElementById(id).value='');
-      }catch(e){
-        createMsg.textContent = 'خطأ: ' + e.message;
-      }
-    };
-
-    // الأدوات: إضافة بالاسم فقط والكود يتولّد تلقائيًا
-    document.getElementById('addToolBtn').onclick = async ()=>{
-      const name = document.getElementById('toolName').value.trim();
-      if(!name){ alert('اكتب اسم الأداة'); return; }
-      const ref = db.collection('tools').doc();
-      const code = 'TOOL:' + ref.id;
-      try{
-        await ref.set({
-          name, code,
-          status:'available',
-          currentHolder:null,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        document.getElementById('toolName').value='';
-        loadTools();
-        alert('تمت إضافة الأداة ✅');
-      }catch(e){ alert('خطأ: '+e.message); }
-    };
-
-    // عرض الأدوات
-    async function loadTools(){
-      const box = document.getElementById('toolsList');
-      box.innerHTML = '';
-      const q = await db.collection('tools').orderBy('createdAt','desc').get();
-      if(q.empty){ box.innerHTML = '<div class="item"><span class="muted">لا توجد أدوات</span></div>'; return; }
-      q.forEach(doc=>{
-        const t = doc.data();
-        const row = document.createElement('div');
-        row.className = 'item';
-        row.innerHTML = `
-          <div>
-            <div><b>${t.name}</b></div>
-            <div class="muted">${t.code} — الحالة: ${t.status||'available'}</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <div id="qr-${doc.id}" class="muted" style="padding:6px 8px;border:1px solid #2a2a2f;border-radius:10px">QR</div>
-            <button class="danger" data-del>حذف</button>
-          </div>`;
-        row.querySelector('[data-del]').onclick = async ()=>{
-          if(confirm('حذف هذه الأداة؟')){ await db.collection('tools').doc(doc.id).delete(); loadTools(); }
-        };
-        setTimeout(()=>{ new QRCode(document.getElementById('qr-'+doc.id), {text:t.code, width:64, height:64}); },0);
-        box.appendChild(row);
       });
-    }
+    })();
   </script>
 </body>
 </html>
