@@ -1,67 +1,103 @@
-<!DOCTYPE html>
-<html lang="ar">
+<!doctype html>
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة المستخدم</title>
-
-<style>
-body { font-family: sans-serif; background:#000; color:#fff; padding:20px; }
-button { width:100%; padding:12px; margin-top:10px; border-radius:8px; background:#e53935; font-size:16px; color:#fff; border:none; }
-.box {
- background:#111; padding:15px; margin-top:10px; border-radius:10px;
-}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prime Tools — User</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
-
 <body>
+  <main class="card">
+    <header class="header">
+      <div class="brand">
+        <h1 data-i18n="title">الأدوات المتاحة</h1>
+        <small id="who"></small>
+      </div>
+      <div class="lang-switch">
+        <button class="lang" data-lang="ar" data-i18n="langAr">AR</button>
+        <button class="lang" data-lang="en" data-i18n="langEn">EN</button>
+        <button class="lang" data-lang="de" data-i18n="langDe">DE</button>
+      </div>
+    </header>
 
-<h2>مرحبًا بك 👋</h2>
-<p>تم تسجيل دخولك بنجاح ✅</p>
+    <table class="table" id="toolsTable">
+      <thead><tr><th data-i18n="thTool">الأداة</th></tr></thead>
+      <tbody></tbody>
+    </table>
 
-<div class="box">
-<h3>الأدوات المتاحة 🔧</h3>
-<div id="tools"></div>
-</div>
+    <div class="row" style="margin-top:16px">
+      <a class="btn" href="admin.html" id="adminLink" style="display:none" data-i18n="goAdmin">لوحة الأدمن</a>
+      <button class="btn btn-danger" id="logoutBtn" data-i18n="logout">تسجيل الخروج</button>
+    </div>
+  </main>
 
-<button onclick="logout()">تسجيل الخروج</button>
+  <script type="module">
+    // Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore-compat.js"></script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCEbKMZHqJQ-UU6Qco7FlAue0E4mCWd4UY",
+      authDomain: "prime-tools99.firebaseapp.com",
+      projectId: "prime-tools99",
+      storageBucket: "prime-tools99.appspot.com",
+      messagingSenderId: "112360376529",
+      appId: "1:112360376529:web:f5fac1d99a87f7f5a85df0",
+      measurementId: "G-WR5IJ3CZ3K"
+    };
 
-<script>
-firebase.initializeApp({
-  apiKey: "AIzaSyCEbKMZHqJQ-UU6Qco7FlAue0E4mCWd4UY",
-  authDomain: "prime-tools99.firebaseapp.com",
-  projectId: "prime-tools99",
-  storageBucket: "prime-tools99.firebasestorage.app",
-  messagingSenderId: "112360376529",
-  appId: "1:112360376529:web:f5fac1d99a87f7f5a85df0"
-});
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
 
-const auth = firebase.auth();
-const db = firebase.firestore();
+    // I18N
+    const TT={
+      ar:{title:"الأدوات المتاحة",langAr:"AR",langEn:"EN",langDe:"DE",thTool:"الأداة",goAdmin:"لوحة الأدمن",logout:"تسجيل الخروج"},
+      en:{title:"Available Tools",langAr:"AR",langEn:"EN",langDe:"DE",thTool:"Tool",goAdmin:"Admin",logout:"Sign out"},
+      de:{title:"Verfügbare Tools",langAr:"AR",langEn:"EN",langDe:"DE",thTool:"Tool",goAdmin:"Adminbereich",logout:"Abmelden"}
+    }, DIR={ar:"rtl",en:"ltr",de:"ltr"};
+    let lang=localStorage.getItem("lang")||"ar";
+    function apply(){
+      const t=TT[lang];
+      document.querySelectorAll("[data-i18n]").forEach(el=>{
+        const k=el.getAttribute("data-i18n"); if(t[k]!==undefined) el.textContent=t[k];
+      });
+      document.documentElement.lang = lang;
+      document.documentElement.dir  = DIR[lang];
+      document.querySelectorAll(".lang").forEach(b=>b.classList.toggle("active", b.dataset.lang===lang));
+    }
+    document.querySelectorAll(".lang").forEach(b=>b.addEventListener("click",()=>{lang=b.dataset.lang;localStorage.setItem("lang",lang);apply();}));
+    apply();
 
-auth.onAuthStateChanged(async user=>{
- if(!user) return window.location.href="index.html";
- loadTools();
-});
+    // Load tools
+    async function loadTools(){
+      const tbody=document.querySelector("#toolsTable tbody");
+      tbody.innerHTML="";
+      const snaps=await getDocs(collection(db,"tools"));
+      snaps.forEach(s=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${s.data().name}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
 
-function logout(){
- auth.signOut().then(()=>window.location.href="index.html");
-}
+    onAuthStateChanged(auth, async user=>{
+      if(!user){ window.location.href="index.html"; return; }
+      document.getElementById("who").textContent = user.email || user.uid;
 
-function loadTools(){
- db.collection("tools").get().then(s=>{
-   let html="";
-   s.forEach(d=>{
-    html += `<p>✅ ${d.data().name}</p>`;
-   });
-   document.getElementById("tools").innerHTML = html || "لا توجد أدوات حاليا ❗";
- });
-}
-</script>
+      // إظهار رابط الأدمن إذا كان isAdmin = true
+      const snap=await getDoc(doc(db,"users",user.uid));
+      if(snap.exists() && snap.data().isAdmin===true){
+        document.getElementById("adminLink").style.display="inline-flex";
+      }
 
+      loadTools();
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async ()=>{
+      await signOut(auth); window.location.href="index.html";
+    });
+  </script>
 </body>
 </html>
