@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Prime Tools — Admin</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -11,7 +11,7 @@
     <header class="header">
       <div class="brand">
         <h1>Prime <span>Tools</span></h1>
-        <small id="who"></small>
+        <div class="sub" id="userBadge" title="email"></div>
       </div>
       <div class="lang-switch">
         <button class="lang" data-lang="ar">AR</button>
@@ -20,27 +20,25 @@
       </div>
     </header>
 
-    <section class="tools">
-      <h2>Tools</h2>
-      <div class="row">
-        <input id="toolName" placeholder="Tool name…" />
-        <button class="btn" id="addToolBtn">Add</button>
-      </div>
-      <table class="table" id="toolsTable"><thead><tr><th>Tool</th><th>Delete</th></tr></thead><tbody></tbody></table>
-    </section>
-
-    <div class="row" style="margin-top:16px">
-      <a class="btn" href="tools.html">User view</a>
-      <button class="btn btn-danger" id="logoutBtn">Logout</button>
+    <div class="tools-head">
+      <input id="toolNameInput" type="text" placeholder="Tool name..." />
+      <button id="addToolBtn" class="btn" data-i18n="add">Add</button>
+      <a class="btn secondary" href="user.html" id="userViewBtn">User view</a>
+      <button class="btn danger" id="logoutBtn">Logout</button>
     </div>
+    <div class="hr"></div>
+
+    <div class="tools-list" id="toolsList"></div>
+    <p id="emptyMsg" class="msg" style="display:none"></p>
   </main>
 
   <script type="module">
+    /* ===== Firebase ===== */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
     import {
-      getFirestore, doc, getDoc, collection, addDoc,
-      getDocs, deleteDoc
+      getFirestore, collection, addDoc, doc, updateDoc,
+      onSnapshot, deleteDoc, getDoc
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -49,68 +47,133 @@
       projectId: "prime-tools99",
       storageBucket: "prime-tools99.appspot.com",
       messagingSenderId: "112360376529",
-      appId: "1:112360376529:web:f5fac1d99a87f7f5a85df0",
-      measurementId: "G-WR5IJ3CZ3K"
+      appId: "1:112360376529:web:f5fac1d99a87f7f5a85df0"
     };
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db   = getFirestore(app);
 
-    const who = document.getElementById("who");
-    const toolsTbody = document.querySelector("#toolsTable tbody");
-
-    function setLangUI(){
-      const dir = (localStorage.getItem("lang")||"ar")==="ar"?"rtl":"ltr";
-      document.documentElement.dir = dir;
-      document.querySelectorAll(".lang").forEach(b=>b.classList.toggle("active", b.dataset.lang===(localStorage.getItem("lang")||"ar")));
+    /* ===== I18N ===== */
+    const T = {
+      ar:{add:"إضافة",logout:"تسجيل الخروج",userView:"واجهة المستخدم",
+          qr:"رمز QR",details:"تفاصيل",del:"حذف",empty:"لا توجد أدوات بعد"},
+      en:{add:"Add",logout:"Logout",userView:"User view",
+          qr:"QR",details:"Details",del:"Delete",empty:"No tools yet"},
+      de:{add:"Hinzufügen",logout:"Logout",userView:"Benutzeransicht",
+          qr:"QR",details:"Details",del:"Löschen",empty:"Noch keine Tools"}
+    };
+    const DIR={ar:"rtl",en:"ltr",de:"ltr"}; let lang=localStorage.getItem('lang')||'ar';
+    function applyLang(){
+      const t=T[lang];
+      document.documentElement.lang=lang; document.documentElement.dir=DIR[lang];
+      document.getElementById('addToolBtn').textContent=t.add;
+      document.getElementById('userViewBtn').textContent=t.userView;
+      document.getElementById('logoutBtn').textContent=t.logout;
+      document.getElementById('emptyMsg').textContent=t.empty;
+      document.querySelectorAll('.lang').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
+      // أزرار الصفوف تُترجم عند الرسم
     }
-    document.querySelectorAll(".lang").forEach(b=>b.addEventListener("click",()=>{
-      localStorage.setItem("lang", b.dataset.lang); setLangUI();
-    }));
-    setLangUI();
+    document.querySelectorAll('.lang').forEach(b=>b.addEventListener('click',()=>{lang=b.dataset.lang;localStorage.setItem('lang',lang);applyLang();renderAll()}));
+    applyLang();
 
-    async function guardAdmin(user){
-      const snap=await getDoc(doc(db,"users",user.uid));
-      const isAdmin = snap.exists() && snap.data().isAdmin===true;
-      if(!isAdmin){ window.location.href="tools.html"; }
-      return isAdmin;
+    /* ===== Helpers ===== */
+    const userBadge = document.getElementById('userBadge');
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user){ window.location.href='index.html'; return; }
+      userBadge.textContent = user.email || user.uid;
+      // تأكد أنه أدمن
+      const s = await getDoc(doc(db,'users',user.uid));
+      if(!s.exists() || s.data().isAdmin!==true){ window.location.href='user.html'; }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click',()=>signOut(auth));
+
+    const toolsCol = collection(db,'tools');
+    const listEl = document.getElementById('toolsList');
+    const emptyMsg = document.getElementById('emptyMsg');
+
+    function makeQrUrl(data, size=300){
+      return `https://chart.googleapis.com/chart?cht=qr&chs=${size}x${size}&chl=${encodeURIComponent(data)}`;
     }
 
-    async function loadTools(){
-      toolsTbody.innerHTML="";
-      const snaps=await getDocs(collection(db,"tools"));
-      snaps.forEach(s=>{
-        const tr=document.createElement("tr");
-        tr.innerHTML=`<td>${s.data().name}</td>
-                      <td><button class="btn btn-danger" data-id="${s.id}">X</button></td>`;
-        toolsTbody.appendChild(tr);
+    window.generateBarcode = async function(id){
+      try{
+        const payload = `https://ay7asan-netizen.github.io/user.html?toolId=${id}`;
+        const qrUrl = makeQrUrl(payload, 300);
+        await updateDoc(doc(db,'tools',id), { barcodeUrl: qrUrl, barcodeData: payload, barcodeAt: Date.now() });
+        alert('QR created');
+      }catch(e){ console.error(e); alert('QR error');}
+    };
+
+    window.showDetails = async function(id){
+      const row = document.querySelector(\`[data-id="\${id}"]\`);
+      const name = row?.dataset.name || '';
+      const qr   = row?.dataset.qr || '';
+      const w = window.open('','_blank','width=420,height=620');
+      w.document.write(\`
+        <html><head><title>\${name}</title>
+        <style>body{font-family:system-ui;padding:16px;background:#0f1420;color:#eaf1ff}
+        .card{background:#121a29;border:1px solid #27405c;border-radius:12px;padding:16px}
+        img{width:260px;height:260px;border-radius:12px;border:1px solid #27405c}
+        .btn{padding:10px 14px;border:none;border-radius:10px;background:#2aa6ff;color:#001528;font-weight:600;cursor:pointer}
+        </style></head><body>
+        <div class="card">
+          <h2>\${name}</h2>
+          \${qr ? \`<img src="\${qr}" alt="QR">\` : '<p>No QR yet</p>'}
+          <p><button class="btn" id="dl">Download</button></p>
+        </div>
+        <script>
+          document.getElementById('dl').onclick=()=>{ if(!'\${qr}') return alert('No QR'); const a=document.createElement('a'); a.href='\${qr}'; a.download='\${name}-qr.png'; a.click(); };
+        <\/script>
+        </body></html>\`);
+    };
+
+    window.deleteTool = async function(id){
+      if(!confirm('Delete?')) return;
+      await deleteDoc(doc(db,'tools',id));
+    };
+
+    async function addTool(){
+      const inp = document.getElementById('toolNameInput');
+      const name = inp.value.trim(); if(!name) return;
+      await addDoc(toolsCol, { name, createdAt: Date.now(), createdBy: auth.currentUser?.uid || null });
+      inp.value='';
+    }
+    document.getElementById('addToolBtn').addEventListener('click', addTool);
+
+    function renderRow(d,id){
+      const t=T[lang];
+      const row = document.createElement('div');
+      row.className='tool-row';
+      row.dataset.id = id;
+      row.dataset.name = d.name||'';
+      row.dataset.qr = d.barcodeUrl||'';
+      row.innerHTML = \`
+        <div class="tool-name">\${d.name}</div>
+        <div class="tool-actions">
+          <button class="btn small" onclick="generateBarcode('\${id}')">\${t.qr}</button>
+          <button class="btn small" onclick="showDetails('\${id}')">\${t.details}</button>
+          <button class="btn danger small" onclick="deleteTool('\${id}')">\${t.del}</button>
+        </div>\`;
+      return row;
+    }
+
+    function renderAll(){
+      // سيعاد الرسم بواسطة onSnapshot تلقائياً، هنا فقط لتحديث النصوص بعد تغيير اللغة
+      document.querySelectorAll('.tool-row').forEach(row=>{
+        const id=row.dataset.id, name=row.dataset.name, qr=row.dataset.qr;
+        const fresh = renderRow({name,barcodeUrl:qr}, id);
+        row.replaceWith(fresh);
       });
     }
 
-    onAuthStateChanged(auth, async user=>{
-      if(!user){ window.location.href="index.html"; return; }
-      who.textContent = user.email || user.uid;
-      if(await guardAdmin(user)) { loadTools(); }
-    });
-
-    document.getElementById("addToolBtn").addEventListener("click", async ()=>{
-      const name = document.getElementById("toolName").value.trim();
-      if(!name) return;
-      await addDoc(collection(db,"tools"),{name});
-      document.getElementById("toolName").value="";
-      loadTools();
-    });
-
-    toolsTbody.addEventListener("click", async (e)=>{
-      if(e.target.matches("button[data-id]")){
-        await deleteDoc(doc(db,"tools", e.target.dataset.id));
-        loadTools();
-      }
-    });
-
-    document.getElementById("logoutBtn").addEventListener("click", async ()=>{
-      await signOut(auth); window.location.href="index.html";
+    onSnapshot(toolsCol, snap=>{
+      listEl.innerHTML='';
+      if(snap.empty){ emptyMsg.style.display='block'; return; }
+      emptyMsg.style.display='none';
+      snap.forEach(docSnap=>{
+        listEl.appendChild(renderRow(docSnap.data(), docSnap.id));
+      });
     });
   </script>
 </body>
