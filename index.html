@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Prime Tools — Login</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -11,35 +11,130 @@
     <header class="header">
       <div class="brand">
         <h1>Prime <span>Tools</span></h1>
-        <a href="admin.html" class="sub" data-i18n="adminLink">منطقة الإدارة</a>
+        <a class="sub" id="adminLink" href="admin.html">منطقة الإدارة</a>
       </div>
       <div class="lang-switch">
-        <button class="lang" data-lang="ar" data-i18n="langAr">AR</button>
-        <button class="lang" data-lang="en" data-i18n="langEn">EN</button>
-        <button class="lang" data-lang="de" data-i18n="langDe">DE</button>
+        <button class="lang" data-lang="ar">AR</button>
+        <button class="lang" data-lang="en">EN</button>
+        <button class="lang" data-lang="de">DE</button>
       </div>
     </header>
 
-    <form id="loginForm" class="form">
-      <label for="email" data-i18n="emailLabel">البريد الإلكتروني</label>
+    <form id="loginForm" class="form" autocomplete="on">
+      <label id="tEmail">البريد الإلكتروني</label>
       <input id="email" type="email" placeholder="example@mail.com" required />
 
-      <label for="password" data-i18n="passLabel">كلمة المرور</label>
+      <label id="tPass">كلمة المرور</label>
       <div class="pwd">
         <input id="password" type="password" required />
-        <button type="button" id="togglePwd" aria-label="Toggle password">👁️</button>
+        <button type="button" id="togglePwd" aria-label="toggle">👁️</button>
       </div>
 
-      <label class="check">
-        <input id="keepSignedIn" type="checkbox" />
-        <span data-i18n="keepLogin">ابْقَ مسجلاً للدخول</span>
-      </label>
+      <div class="row">
+        <label class="check">
+          <input id="keepSignedIn" type="checkbox" />
+          <span id="tRemember">ابْقَ مسجلاً للدخول</span>
+        </label>
+        <span class="badge" id="youAre">لا يوجد تسجيل ذاتي — فقط الأدمن</span>
+      </div>
 
-      <button class="btn" type="submit" data-i18n="login">تسجيل الدخول</button>
+      <button class="btn" type="submit" id="tLogin">تسجيل الدخول</button>
       <p id="authMsg" class="msg"></p>
     </form>
   </main>
 
-  <script type="module" src="app.js"></script>
+  <script type="module">
+    /* ========= Firebase ========= */
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+      setPersistence, browserLocalPersistence, browserSessionPersistence
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCEbKMZHqJQ-UU6Qco7FlAue0E4mCWd4UY",
+      authDomain: "prime-tools99.firebaseapp.com",
+      projectId: "prime-tools99",
+      storageBucket: "prime-tools99.appspot.com",
+      messagingSenderId: "112360376529",
+      appId: "1:112360376529:web:f5fac1d99a87f7f5a85df0"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    /* ========= I18N ========= */
+    const T = {
+      ar:{admin:"منطقة الإدارة",email:"البريد الإلكتروني",pass:"كلمة المرور",
+          remember:"ابْقَ مسجلاً للدخول",login:"تسجيل الدخول",
+          msgOk:"تم تسجيل دخولك بنجاح ✅",msgBad:"بيانات غير صحيحة",banner:"لا يوجد تسجيل ذاتي — فقط الأدمن"},
+      en:{admin:"Admin area",email:"E-mail",pass:"Password",
+          remember:"Keep me signed in",login:"Sign in",
+          msgOk:"Signed in successfully ✅",msgBad:"Invalid credentials",banner:"No self-registration — admin only"},
+      de:{admin:"Adminbereich",email:"E-Mail",pass:"Passwort",
+          remember:"Angemeldet bleiben",login:"Anmelden",
+          msgOk:"Erfolgreich angemeldet ✅",msgBad:"Ungültige Anmeldedaten",banner:"Keine Selbstregistrierung — nur Admin"}
+    };
+    const DIR = {ar:"rtl",en:"ltr",de:"ltr"};
+    let lang = localStorage.getItem("lang") || "ar";
+
+    function applyLang(){
+      const t=T[lang];
+      document.documentElement.lang = lang;
+      document.documentElement.dir  = DIR[lang];
+      document.getElementById('adminLink').textContent = t.admin;
+      document.getElementById('tEmail').textContent = t.email;
+      document.getElementById('tPass').textContent  = t.pass;
+      document.getElementById('tRemember').textContent = t.remember;
+      document.getElementById('tLogin').textContent = t.login;
+      document.getElementById('youAre').textContent = t.banner;
+      document.querySelectorAll('.lang').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
+    }
+    document.querySelectorAll('.lang').forEach(b=>{
+      b.addEventListener('click',()=>{ lang=b.dataset.lang; localStorage.setItem('lang',lang); applyLang(); });
+    });
+    applyLang();
+
+    /* ========= UI ========= */
+    const pwd = document.getElementById('password');
+    document.getElementById('togglePwd').addEventListener('click',()=>{
+      pwd.type = pwd.type==='password' ? 'text' : 'password';
+    });
+    const emailEl = document.getElementById('email');
+    const keepEl  = document.getElementById('keepSignedIn');
+    const msg     = document.getElementById('authMsg');
+    const savedEmail = localStorage.getItem('savedEmail'); if(savedEmail) emailEl.value=savedEmail;
+
+    async function routeAfterLogin(){
+      const user = auth.currentUser; if(!user) return;
+      try{
+        const snap = await getDoc(doc(db,'users',user.uid));
+        const isAdmin = snap.exists() && snap.data().isAdmin===true;
+        window.location.href = isAdmin ? 'admin.html' : 'user.html';
+      }catch(e){
+        console.error(e);
+        window.location.href = 'user.html';
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      msg.textContent=""; msg.classList.remove('error');
+      try{
+        await setPersistence(auth, keepEl.checked?browserLocalPersistence:browserSessionPersistence);
+        await signInWithEmailAndPassword(auth, emailEl.value.trim(), pwd.value.trim());
+        localStorage.setItem('savedEmail', emailEl.value.trim());
+        msg.textContent = T[lang].msgOk;
+        routeAfterLogin();
+      }catch(err){
+        console.error(err);
+        msg.textContent = T[lang].msgBad;
+        msg.classList.add('error');
+      }
+    });
+
+    onAuthStateChanged(auth, (user)=>{ if(user) routeAfterLogin(); });
+  </script>
 </body>
 </html>
