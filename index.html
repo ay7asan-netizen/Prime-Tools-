@@ -30,12 +30,10 @@
         <button type="button" id="togglePwd" aria-label="Toggle password">👁️</button>
       </div>
 
-      <div class="row">
-        <label class="check">
-          <input id="keepSignedIn" type="checkbox" />
-          <span data-i18n="keepLogin">ابْقَ مسجلاً للدخول</span>
-        </label>
-      </div>
+      <label class="check">
+        <input id="keepSignedIn" type="checkbox" />
+        <span data-i18n="keepLogin">ابْقَ مسجلاً للدخول</span>
+      </label>
 
       <button class="btn" type="submit" data-i18n="login">تسجيل الدخول</button>
       <p id="authMsg" class="msg"></p>
@@ -49,9 +47,7 @@
       getAuth, onAuthStateChanged, signInWithEmailAndPassword,
       setPersistence, browserLocalPersistence, browserSessionPersistence
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import {
-      getFirestore, doc, getDoc
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCEbKMZHqJQ-UU6Qco7FlAue0E4mCWd4UY",
@@ -59,79 +55,78 @@
       projectId: "prime-tools99",
       storageBucket: "prime-tools99.appspot.com",
       messagingSenderId: "112360376529",
-      appId: "1:112360376529:web:f5fac1d99a87f7f5a85df0",
-      measurementId: "G-WR5IJ3CZ3K"
+      appId: "1:112360376529:web:f5fac1d99a87f7f5a85df0"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db   = getFirestore(app);
 
-    /* ================= I18N ================= */
-    const T = {
+    /* ================= Translations ================= */
+    const T={
       ar:{adminLink:"منطقة الإدارة",emailLabel:"البريد الإلكتروني",passLabel:"كلمة المرور",
-          keepLogin:"ابْقَ مسجلاً للدخول",login:"تسجيل الدخول",
-          langAr:"AR",langEn:"EN",langDe:"DE",success:"تم تسجيل دخولك بنجاح ✅",wrong:"بيانات غير صحيحة"},
-      en:{adminLink:"Admin area",emailLabel:"E-mail",passLabel:"Password",
-          keepLogin:"Keep me signed in",login:"Sign in",
-          langAr:"AR",langEn:"EN",langDe:"DE",success:"Signed in successfully ✅",wrong:"Invalid credentials"},
+        keepLogin:"ابْقَ مسجلاً للدخول",login:"تسجيل الدخول",
+        langAr:"AR",langEn:"EN",langDe:"DE",success:"تم تسجيل دخولك ✅",wrong:"معلومات خاطئة"},
+      en:{adminLink:"Admin Area",emailLabel:"Email",passLabel:"Password",
+        keepLogin:"Keep me signed in",login:"Sign in",
+        langAr:"AR",langEn:"EN",langDe:"DE",success:"Signed in ✅",wrong:"Invalid credentials"},
       de:{adminLink:"Adminbereich",emailLabel:"E-Mail",passLabel:"Passwort",
-          keepLogin:"Angemeldet bleiben",login:"Anmelden",
-          langAr:"AR",langEn:"EN",langDe:"DE",success:"Erfolgreich angemeldet ✅",wrong:"Ungültige Anmeldedaten"}
+        keepLogin:"Angemeldet bleiben",login:"Anmelden",
+        langAr:"AR",langEn:"EN",langDe:"DE",success:"Erfolgreich angemeldet ✅",wrong:"Ungültige Daten"}
     };
     const DIR={ar:"rtl",en:"ltr",de:"ltr"};
-    let lang=localStorage.getItem("lang")||"ar";
+
+    let lang = localStorage.getItem("lang") || "ar";
     function applyLang(){
       const t=T[lang];
       document.querySelectorAll("[data-i18n]").forEach(el=>{
-        const k=el.getAttribute("data-i18n"); if(t[k]!==undefined) el.textContent=t[k];
+        const key=el.getAttribute("data-i18n");
+        if(t[key]) el.textContent = t[key];
       });
-      document.documentElement.lang=lang;
-      document.documentElement.dir=DIR[lang];
+      document.documentElement.lang = lang;
+      document.documentElement.dir = DIR[lang];
       document.querySelectorAll(".lang").forEach(b=>b.classList.toggle("active",b.dataset.lang===lang));
     }
-    document.querySelectorAll(".lang").forEach(b=>b.addEventListener("click",()=>{
-      lang=b.dataset.lang; localStorage.setItem("lang",lang); applyLang();
-    }));
+    document.querySelectorAll(".lang").forEach(b=>b.addEventListener("click",()=>{lang=b.dataset.lang;localStorage.setItem("lang",lang);applyLang();}));
     applyLang();
 
-    /* ====== UI helpers ====== */
+    /* ================= UI ================= */
     const pwd = document.getElementById("password");
     document.getElementById("togglePwd").addEventListener("click",()=>{pwd.type = pwd.type==="password"?"text":"password";});
+
     const emailEl = document.getElementById("email");
     const keepEl  = document.getElementById("keepSignedIn");
     const msg     = document.getElementById("authMsg");
-    const savedEmail = localStorage.getItem("savedEmail"); if(savedEmail) emailEl.value=savedEmail;
+    const savedEmail=localStorage.getItem("savedEmail"); if(savedEmail) emailEl.value=savedEmail;
 
     async function routeAfterLogin(){
-      const user = auth.currentUser; if(!user) return;
+      const user = auth.currentUser;
+      if(!user) return;
       try{
         const snap = await getDoc(doc(db,"users",user.uid));
         const isAdmin = snap.exists() && snap.data().isAdmin===true;
-        window.location.href = isAdmin ? "admin.html" : "tools.html";
-      }catch(e){
-        console.error(e);
-        window.location.href = "tools.html";
+        window.location.href = isAdmin ? "admin.html" : "user.html";
+      }catch{
+        window.location.href = "user.html";
       }
     }
 
-    document.getElementById("loginForm").addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      msg.textContent=""; msg.classList.remove("error");
+    /* ================= Login handler ================= */
+    document.getElementById("loginForm").addEventListener("submit", async e=>{
+      e.preventDefault(); msg.textContent="";
       try{
         await setPersistence(auth, keepEl.checked?browserLocalPersistence:browserSessionPersistence);
-        await signInWithEmailAndPassword(auth, emailEl.value.trim(), pwd.value.trim());
-        localStorage.setItem("savedEmail", emailEl.value.trim());
+        await signInWithEmailAndPassword(auth,emailEl.value.trim(),pwd.value.trim());
+        localStorage.setItem("savedEmail",emailEl.value.trim());
         msg.textContent = T[lang].success;
-        routeAfterLogin();
-      }catch(err){
-        console.error(err);
+        setTimeout(routeAfterLogin,400);
+      }catch{
         msg.textContent = T[lang].wrong;
         msg.classList.add("error");
       }
     });
 
-    onAuthStateChanged(auth, (user)=>{ if(user) routeAfterLogin(); });
+    onAuthStateChanged(auth,(user)=>{ if(user) routeAfterLogin(); });
   </script>
 </body>
 </html>
