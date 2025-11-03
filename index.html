@@ -3,51 +3,55 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Prime Tools</title>
+  <title>Prime Tools — Login</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <main class="card">
-    <div class="header">
+    <header class="header">
       <div class="brand">
-        <h1 data-i18n="appTitle">Prime Tools</h1>
-        <small><a class="link" href="admin.html" data-i18n="adminLink">منطقة الإدارة</a></small>
+        <h1>Prime <span>Tools</span></h1>
+        <a href="admin.html" class="sub" data-i18n="adminLink">منطقة الإدارة</a>
       </div>
       <div class="lang-switch">
         <button class="lang" data-lang="ar" data-i18n="langAr">AR</button>
         <button class="lang" data-lang="en" data-i18n="langEn">EN</button>
         <button class="lang" data-lang="de" data-i18n="langDe">DE</button>
       </div>
-    </div>
+    </header>
 
-    <form id="loginForm" class="form" autocomplete="on">
-      <label for="email" data-i18n="emailLabel">البريد الإلكتروني</label>
-      <input id="email" type="email" inputmode="email" placeholder="example@mail.com" required />
+    <form id="loginForm" class="form">
+      <label data-i18n="emailLabel">البريد الإلكتروني</label>
+      <input id="email" type="email" placeholder="example@mail.com" required />
 
-      <label for="password" data-i18n="passLabel">كلمة المرور</label>
-      <div class="password-wrap">
+      <label data-i18n="passLabel">كلمة المرور</label>
+      <div class="pwd">
         <input id="password" type="password" required />
-        <button type="button" id="togglePwd" class="eye" aria-label="Toggle password">👁️</button>
+        <button type="button" id="togglePwd" aria-label="Toggle password">👁️</button>
       </div>
 
-      <label class="keep">
-        <input type="checkbox" id="keepSignedIn" />
-        <span data-i18n="keepLogin">ابْقَ مسجلاً للدخول</span>
-      </label>
+      <div class="row">
+        <label class="check">
+          <input id="keepSignedIn" type="checkbox" />
+          <span data-i18n="keepLogin">ابْقَ مسجلاً للدخول</span>
+        </label>
+      </div>
 
-      <button id="loginBtn" type="submit" class="btn btn-primary" data-i18n="login">تسجيل الدخول</button>
+      <button class="btn" type="submit" data-i18n="login">تسجيل الدخول</button>
+      <p id="authMsg" class="msg"></p>
     </form>
-
-    <p id="authMsg" class="notice"></p>
   </main>
 
-  <!-- Firebase v9 -->
   <script type="module">
+    /* ================= Firebase ================= */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import {
-      getAuth, setPersistence, browserLocalPersistence, browserSessionPersistence,
-      signInWithEmailAndPassword, onAuthStateChanged
+      getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+      setPersistence, browserLocalPersistence, browserSessionPersistence
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCEbKMZHqJQ-UU6Qco7FlAue0E4mCWd4UY",
@@ -61,65 +65,73 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db   = getFirestore(app);
 
-    // ===== I18N =====
-    const translations = {
-      ar:{appTitle:"Prime Tools",adminLink:"منطقة الإدارة",emailLabel:"البريد الإلكتروني",passLabel:"كلمة المرور",
-          keepLogin:"ابْقَ مسجلاً للدخول",login:"تسجيل الدخول",langAr:"AR",langEn:"EN",langDe:"DE",
-          success:"تم تسجيل دخولك بنجاح ✅", wrong:"بيانات غير صحيحة"},
-      en:{appTitle:"Prime Tools",adminLink:"Admin area",emailLabel:"E-mail",passLabel:"Password",
-          keepLogin:"Keep me signed in",login:"Sign in",langAr:"AR",langEn:"EN",langDe:"DE",
-          success:"Signed in successfully ✅", wrong:"Invalid credentials"},
-      de:{appTitle:"Prime Tools",adminLink:"Adminbereich",emailLabel:"E-Mail",passLabel:"Passwort",
-          keepLogin:"Angemeldet bleiben",login:"Anmelden",langAr:"AR",langEn:"EN",langDe:"DE",
-          success:"Erfolgreich angemeldet ✅", wrong:"Ungültige Anmeldedaten"}
+    /* ================= I18N ================= */
+    const T = {
+      ar:{adminLink:"منطقة الإدارة",emailLabel:"البريد الإلكتروني",passLabel:"كلمة المرور",
+          keepLogin:"ابْقَ مسجلاً للدخول",login:"تسجيل الدخول",
+          langAr:"AR",langEn:"EN",langDe:"DE",success:"تم تسجيل دخولك بنجاح ✅",wrong:"بيانات غير صحيحة"},
+      en:{adminLink:"Admin area",emailLabel:"E-mail",passLabel:"Password",
+          keepLogin:"Keep me signed in",login:"Sign in",
+          langAr:"AR",langEn:"EN",langDe:"DE",success:"Signed in successfully ✅",wrong:"Invalid credentials"},
+      de:{adminLink:"Adminbereich",emailLabel:"E-Mail",passLabel:"Passwort",
+          keepLogin:"Angemeldet bleiben",login:"Anmelden",
+          langAr:"AR",langEn:"EN",langDe:"DE",success:"Erfolgreich angemeldet ✅",wrong:"Ungültige Anmeldedaten"}
     };
     const DIR={ar:"rtl",en:"ltr",de:"ltr"};
-    let currentLang=localStorage.getItem("lang")||"ar";
+    let lang=localStorage.getItem("lang")||"ar";
     function applyLang(){
-      const t=translations[currentLang];
+      const t=T[lang];
       document.querySelectorAll("[data-i18n]").forEach(el=>{
         const k=el.getAttribute("data-i18n"); if(t[k]!==undefined) el.textContent=t[k];
       });
-      document.documentElement.lang=currentLang;
-      document.documentElement.dir=DIR[currentLang];
-      document.querySelectorAll(".lang").forEach(b=>b.classList.toggle("active",b.dataset.lang===currentLang));
+      document.documentElement.lang=lang;
+      document.documentElement.dir=DIR[lang];
+      document.querySelectorAll(".lang").forEach(b=>b.classList.toggle("active",b.dataset.lang===lang));
     }
-    document.querySelectorAll(".lang").forEach(btn=>btn.addEventListener("click",()=>{
-      currentLang=btn.dataset.lang; localStorage.setItem("lang",currentLang); applyLang();
+    document.querySelectorAll(".lang").forEach(b=>b.addEventListener("click",()=>{
+      lang=b.dataset.lang; localStorage.setItem("lang",lang); applyLang();
     }));
     applyLang();
 
-    // ===== Password toggle =====
-    const pwd=document.getElementById("password");
-    document.getElementById("togglePwd").addEventListener("click",()=>{pwd.type=pwd.type==="password"?"text":"password"});
+    /* ====== UI helpers ====== */
+    const pwd = document.getElementById("password");
+    document.getElementById("togglePwd").addEventListener("click",()=>{pwd.type = pwd.type==="password"?"text":"password";});
+    const emailEl = document.getElementById("email");
+    const keepEl  = document.getElementById("keepSignedIn");
+    const msg     = document.getElementById("authMsg");
+    const savedEmail = localStorage.getItem("savedEmail"); if(savedEmail) emailEl.value=savedEmail;
 
-    // ===== Login =====
-    const emailEl=document.getElementById("email");
-    const keepEl=document.getElementById("keepSignedIn");
-    const msg=document.getElementById("authMsg");
+    async function routeAfterLogin(){
+      const user = auth.currentUser; if(!user) return;
+      try{
+        const snap = await getDoc(doc(db,"users",user.uid));
+        const isAdmin = snap.exists() && snap.data().isAdmin===true;
+        window.location.href = isAdmin ? "admin.html" : "tools.html";
+      }catch(e){
+        console.error(e);
+        window.location.href = "tools.html";
+      }
+    }
 
-    // Prefill saved email
-    const savedEmail=localStorage.getItem("savedEmail"); if(savedEmail) emailEl.value=savedEmail;
-
-    document.getElementById("loginForm").addEventListener("submit",async e=>{
-      e.preventDefault(); msg.textContent="";
-      const email=emailEl.value.trim(), pass=pwd.value.trim(); if(!email||!pass) return;
-
+    document.getElementById("loginForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      msg.textContent=""; msg.classList.remove("error");
       try{
         await setPersistence(auth, keepEl.checked?browserLocalPersistence:browserSessionPersistence);
-        localStorage.setItem("savedEmail", email);
-        await signInWithEmailAndPassword(auth,email,pass);
-        msg.textContent=translations[currentLang].success;
+        await signInWithEmailAndPassword(auth, emailEl.value.trim(), pwd.value.trim());
+        localStorage.setItem("savedEmail", emailEl.value.trim());
+        msg.textContent = T[lang].success;
+        routeAfterLogin();
       }catch(err){
-        console.error(err); msg.classList.add("error"); msg.textContent=translations[currentLang].wrong;
+        console.error(err);
+        msg.textContent = T[lang].wrong;
+        msg.classList.add("error");
       }
     });
 
-    onAuthStateChanged(auth, user => {
-      // بإمكانك توجيه المستخدم لصفحة أدوات بعد نجاح الدخول
-      // console.log("User:", user?.uid);
-    });
+    onAuthStateChanged(auth, (user)=>{ if(user) routeAfterLogin(); });
   </script>
 </body>
 </html>
