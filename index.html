@@ -2,184 +2,110 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title data-i18n="title">Prime Tools — تسجيل الدخول</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prime Tools</title>
+
+  <!-- ====== UI STYLE (نفسه ستستخدمه في admin.html) ====== -->
   <style>
-    body{margin:0;background:#0e0e10;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Tajawal,sans-serif}
-    .wrap{max-width:420px;margin:40px auto;padding:0 16px}
-    .card{background:#141418;border:1px solid #27272a;border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-    h1{margin:0 0 14px}
-    .field{position:relative;margin-top:10px}
-    input{width:100%;padding:12px 44px 12px 12px;border-radius:10px;border:1px solid #303036;background:#0f0f12;color:#fff}
-    .eye{position:absolute;left:10px;top:50%;transform:translateY(-50%);cursor:pointer;user-select:none;opacity:.8}
-    .row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;flex-wrap:wrap}
-    .btn{width:100%;padding:12px;border:none;border-radius:10px;background:#27b0ff;color:#061019;font-weight:800;cursor:pointer;margin-top:12px}
-    .muted{color:#a6a6b0;font-size:14px;margin-top:10px}
-    a{color:#9cd2ff;text-decoration:none}
-    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:12px}
-    .link{color:#9cd2ff;text-decoration:none;font-size:14px;white-space:nowrap}
-    .langbar{display:flex;gap:8px;align-items:center}
-    .lang{cursor:pointer;opacity:.8;border:1px solid #2a2a2f;border-radius:999px;padding:6px 10px}
+    :root{
+      --bg:#0e0e10;--card:#141418;--muted:#a6a6b0;--border:#27272a;
+      --input-bg:#0f0f12;--accent:#27b0ff;--accent-ink:#071622;
+      --shadow:0 10px 36px rgba(0,0,0,.35);--radius:16px
+    }
+    *{box-sizing:border-box}html,body{height:100%}
+    body{margin:0;background:var(--bg);color:#fff;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Tajawal,"Noto Naskh Arabic",sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+    .wrap{max-width:720px;margin:36px auto;padding:0 18px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+    h1,h2{margin:0 0 14px 0;line-height:1.15}h1{font-size:clamp(26px,4vw,44px);font-weight:900;letter-spacing:.3px}h2{font-size:clamp(18px,2.8vw,24px);font-weight:800}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .langbar{display:flex;align-items:center;gap:8px}
+    .lang{cursor:pointer;user-select:none;padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:#111115;opacity:.85;font-weight:700;letter-spacing:.2px}
     .lang.active{opacity:1;background:#1b1b21}
-    label{display:block;margin-top:6px}
+    .link{color:#9cd2ff;text-decoration:none;font-weight:700}.link:hover{text-decoration:underline}
+    label{display:block;margin:10px 0 6px;font-weight:700}
+    .field{position:relative}
+    input,button{width:100%;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:#fff;padding:13px 14px;font-size:16px}
+    input::placeholder{color:#8b8b95}input:focus,button:focus{outline:2px solid var(--accent);outline-offset:2px}
+    .eye{position:absolute;inset-block:0;display:grid;place-items:center;width:42px;cursor:pointer;opacity:.8}
+    html[dir="rtl"] .eye{left:6px}html[dir="ltr"] .eye{right:6px}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px}
+    .muted{color:var(--muted);font-size:14px}
+    .btn{background:var(--accent);color:var(--accent-ink);border:none;font-weight:900;letter-spacing:.2px;padding:13px 14px;border-radius:12px;margin-top:14px;cursor:pointer;transition:transform .05s ease,filter .2s ease}
+    .btn:hover{filter:brightness(1.06)}.btn:active{transform:translateY(1px)}
+    .hidden{display:none}
   </style>
+
+  <!-- manifest/service worker (اختياري) -->
+  <link rel="manifest" href="manifest.json" />
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <div class="top">
-        <h1 data-i18n="brand">Prime Tools</h1>
+        <h1>Prime<br/>Tools</h1>
         <div class="langbar">
-          <span class="lang" data-lang="ar">AR</span>
-          <span class="lang" data-lang="en">EN</span>
-          <span class="lang" data-lang="de">DE</span>
-          <a class="link" href="admin.html" data-i18n="adminPanel">لوحة الأدمن</a>
+          <button class="lang active" data-lang="ar">AR</button>
+          <button class="lang" data-lang="en">EN</button>
+          <button class="lang" data-lang="de">DE</button>
         </div>
+        <a class="link" href="admin.html" id="t-admin">Adminbereich</a>
       </div>
 
-      <label data-i18n="emailLabel">البريد الإلكتروني</label>
-      <div class="field">
-        <input id="email" type="email" placeholder="example@mail.com" autocomplete="username" />
+      <div class="form">
+        <label id="t-email">E-Mail</label>
+        <div class="field">
+          <input id="email" type="email" placeholder="example@mail.com" autocomplete="username" />
+        </div>
+
+        <label id="t-pass">Passwort</label>
+        <div class="field">
+          <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+          <span class="eye" id="togglePass" title="إظهار/إخفاء">👁️</span>
+        </div>
+
+        <div class="row">
+          <label style="display:flex;align-items:center;gap:8px">
+            <input id="remember" type="checkbox" />
+            <span id="t-remember">ابقَ مسجلاً للدخول</span>
+          </label>
+          <span class="muted" id="t-no-self">لا توجد تسجيل ذاتي — فقط الأدمن</span>
+        </div>
+
+        <button id="loginBtn" class="btn" style="margin-top:18px" id="t-login">Anmelden</button>
       </div>
 
-      <label style="margin-top:10px" data-i18n="passLabel">كلمة المرور</label>
-      <div class="field">
-        <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
-        <span id="toggle" class="eye">👁️</span>
+      <!-- قسم التسجيل الذاتي موجود لكن مخفي حتى لا يتعطل كودك القديم -->
+      <div id="selfRegister" class="hidden">
+        <input id="firstName"/><input id="lastName"/><input id="address"/>
+        <input id="regEmail"/><input id="regPass"/><button id="registerBtn"></button>
       </div>
-
-      <div class="row">
-        <label style="display:flex;gap:8px;align-items:center">
-          <input id="remember" type="checkbox" /> <span data-i18n="remember">تذكّرني</span>
-        </label>
-        <span class="muted" data-i18n="noSelfSignup">لا يوجد إنشاء حساب هنا — فقط من الأدمن</span>
-      </div>
-
-      <button class="btn" id="loginBtn" data-i18n="loginBtn">دخول</button>
-      <div id="msg" class="muted"></div>
     </div>
   </div>
 
-  <!-- Firebase (Compat) -->
-  <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore-compat.js"></script>
+  <!-- Firebase v8 compat (كما يستخدم كودك) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
+  <!-- سكربتاتك -->
+  <script src="app.js"></script>
+
+  <!-- تحسينات بسيطة (إظهار/إخفاء كلمة المرور + تبديل اللغات بصرياً) -->
   <script>
-    // === i18n ===
-    const T = {
-      ar: {
-        title: "Prime Tools — تسجيل الدخول",
-        brand: "Prime Tools",
-        adminPanel: "لوحة الأدمن",
-        emailLabel: "البريد الإلكتروني",
-        passLabel: "كلمة المرور",
-        remember: "تذكّرني",
-        noSelfSignup: "لا يوجد إنشاء حساب هنا — فقط من الأدمن",
-        loginBtn: "دخول",
-        errNoUser: "لا يوجد ملف مستخدم.",
-        errNotApproved: "حسابك غير مفعّل."
-      },
-      en: {
-        title: "Prime Tools — Sign in",
-        brand: "Prime Tools",
-        adminPanel: "Admin Panel",
-        emailLabel: "Email",
-        passLabel: "Password",
-        remember: "Remember me",
-        noSelfSignup: "No self-signup — Admin only",
-        loginBtn: "Sign in",
-        errNoUser: "User profile not found.",
-        errNotApproved: "Your account is not approved."
-      },
-      de: {
-        title: "Prime Tools — Anmeldung",
-        brand: "Prime Tools",
-        adminPanel: "Adminbereich",
-        emailLabel: "E-Mail",
-        passLabel: "Passwort",
-        remember: "Angemeldet bleiben",
-        noSelfSignup: "Keine Selbstregistrierung — nur Admin",
-        loginBtn: "Anmelden",
-        errNoUser: "Benutzerprofil nicht gefunden.",
-        errNotApproved: "Ihr Konto ist nicht freigegeben."
-      }
-    };
-
-    function applyLang(lang){
-      const dict = T[lang] || T.ar;
-      document.documentElement.lang = lang;
-      document.documentElement.dir  = (lang==='ar'?'rtl':'ltr');
-      document.querySelectorAll('[data-i18n]').forEach(el=>{
-        const key = el.getAttribute('data-i18n');
-        if(dict[key]) el.textContent = dict[key];
-      });
-      document.title = dict.title;
-      // تفعيل زر اللغة المختارة
+    (function(){
+      const pass = document.getElementById('password');
+      document.getElementById('togglePass').onclick = () => {
+        pass.type = pass.type === 'password' ? 'text' : 'password';
+      };
       document.querySelectorAll('.lang').forEach(b=>{
-        b.classList.toggle('active', b.dataset.lang===lang);
+        b.addEventListener('click', ()=>{
+          document.querySelectorAll('.lang').forEach(x=>x.classList.remove('active'));
+          b.classList.add('active');
+          // لغة الواجهة يتكفل بها app.js لديك (حسب IDs)
+        });
       });
-      localStorage.setItem('pt_lang', lang);
-    }
-
-    document.addEventListener('click', (e)=>{
-      const b = e.target.closest('.lang');
-      if(!b) return;
-      applyLang(b.dataset.lang);
-    });
-
-    // اللغة المبدئية
-    applyLang(localStorage.getItem('pt_lang') || 'ar');
-
-    // === Firebase ===
-    const firebaseConfig = {
-      apiKey: "AIzaSyCEbKMZHqJQ-UU6Qco7FlAue0E4mCWd4UY",
-      authDomain: "prime-tools99.firebaseapp.com",
-      projectId: "prime-tools99",
-      storageBucket: "prime-tools99.firebasestorage.app",
-      messagingSenderId: "112360376529",
-      appId: "1:112360376529:web:f5fac1d99a87f7f5a85df0"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db   = firebase.firestore();
-
-    // إظهار/إخفاء كلمة المرور
-    document.getElementById('toggle').onclick = ()=>{
-      const p = document.getElementById('password');
-      p.type = (p.type === 'password') ? 'text' : 'password';
-    };
-
-    // تذكّرني = LOCAL | بدون تذكّر = SESSION
-    async function setPersistence(remember){
-      const kind = remember ? firebase.auth.Auth.Persistence.LOCAL
-                            : firebase.auth.Auth.Persistence.SESSION;
-      await auth.setPersistence(kind);
-    }
-
-    // تسجيل الدخول
-    document.getElementById('loginBtn').onclick = async ()=>{
-      const email = document.getElementById('email').value.trim();
-      const pass  = document.getElementById('password').value;
-      const remember = document.getElementById('remember').checked;
-      const msg = document.getElementById('msg');
-      msg.textContent = '';
-      try{
-        await setPersistence(remember);
-        const cred = await auth.signInWithEmailAndPassword(email, pass);
-        const udoc = await db.collection('users').doc(cred.user.uid).get();
-        const lang = localStorage.getItem('pt_lang') || 'ar';
-        const dict = T[lang];
-
-        if(!udoc.exists) { msg.textContent = dict.errNoUser; await auth.signOut(); return; }
-        const u = udoc.data();
-        if(u.status !== 'approved'){ msg.textContent = dict.errNotApproved; await auth.signOut(); return; }
-
-        window.location.href = 'user.html';
-      }catch(e){
-        msg.textContent = e.message;
-      }
-    };
+    })();
   </script>
 </body>
 </html>
